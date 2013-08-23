@@ -35,7 +35,7 @@ def adaptMetaDataTypes(metaData):
 		if type(metaData[key]) == list:
 			for i in range(len(metaData[key])):
 				metaData[key][i] = adaptValue(metaData[key][i])
-
+		
 	return metaData
 
 def adaptValue(value):
