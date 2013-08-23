@@ -6,9 +6,7 @@ define([
   
   var ContentCollection = Backbone.Collection.extend({
   	url: "api/content/",
-  	initialize: function() {
-  		
-  	}
+  	model: ContentModel,
   });
 
   return ContentCollection;
