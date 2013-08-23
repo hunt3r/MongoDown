@@ -16,12 +16,13 @@ mongoService = mongo.MongoService(config.development)
 
 def parseMDFile(filePath):
 	"""Parse the MD File to a dictionary"""
-	input_file = codecs.open(filePath, mode="r", encoding="utf-8")
-	text = input_file.read()
+	inputFile = codecs.open(filePath, mode="r", encoding="utf-8")
+	text = inputFile.read()
+	html = md.convert(text)
+	meta = adaptMetaDataTypes(md.Meta)
 
-	#return { "html" : md.convert(text), "meta": adaptMetaDataTypes(md.Meta) }
-	return ContentItem(md.convert(text), adaptMetaDataTypes(md.Meta))
-	
+	return ContentItem(meta,html,filePath)
+
 def getFiles(contentFolder):
 	"""Get the mardown files"""
 	from os import listdir
@@ -47,10 +48,10 @@ def adaptValue(value):
 		if value.lower() == "false":
 			return False
 
-		#print value
 		try:
 		    return int(value)
 		except ValueError:
+			#Just return the value as a string
 		    return value
 	
 
@@ -58,6 +59,7 @@ def adaptValue(value):
 def main():
 
 	mdFiles = getFiles(args.contentfolder)
+	
 	contentObjects = []
 	for file in mdFiles:
 	 	contentObjects.append(parseMDFile(file))
