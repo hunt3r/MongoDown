@@ -1,10 +1,10 @@
 define([
-    'jquery',
-    'underscore',
-    'backbone',
-    'text!templates/projects/projectList.tpl.html',
-    'models/ContentCollection',
-    'models/ContentItem'
+        'jquery',
+        'underscore',
+        'backbone',
+        'text!templates/projects/projectList.tpl.html',
+        'models/ContentCollection',
+        'models/ContentItem'
 
 ], function($, _, Backbone, template, ContentCollection, ContentItem){
 
@@ -21,24 +21,17 @@ define([
                     self.render();
                 }, 
                 error: function(error) {
-                    // error is an instance of Parse.Error.
+                    log(error);
                 }
             });
-
         },
         render: function(){
-
-                $('.menu li').removeClass('active');
-                $('.menu li a[href="#projects"]').parent().addClass('active');
-                var compiledTemplate = _.template( template, { projects: this.collection } );
-                this.$el.html(compiledTemplate);
-                // var sidebarView = new SidebarView();
-                // sidebarView.render();
-
+            var compiledTemplate = _.template( template, { projects: this.collection } );
+            this.$el.html(compiledTemplate);
         }
 
     });
 
     return ProjectsListView;
-    
+        
 });
