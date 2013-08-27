@@ -1,7 +1,7 @@
 layout: post
-title: Motocross
+title: Motocross Racing
 created: 2009-10-27 18:20:53 -04:00
 tag: Motocross
-type: project 
+type: thought
 
 <p>I decided to round up a bunch of the photos from my motocross racing days and put them up in a gallery.&nbsp; I put them in Chronological order with captions, the captions are viewable on each photo.&nbsp;</p><p>I personally think these years were some of the most vital to my personal/professional development.&nbsp; Most people don't realize the dedication is takes to race at this level.&nbsp; I want to thank my parents and all my sponsors over the years for making these memories possible.&nbsp; Some special thanks go out to not in any particular order, and obviously in different years:</p><table style="width: 100%;" border="0" cellpadding="10"><tbody><tr><td><ul><li><strong>Mom, Dad, Steve, Ashley and Ted</strong></li><li>Bergers Honda in Flemington NJ</li><li>Dunlop Tires (In particular Brian Fleck)</li><li>AXO Sport (Sharon Richards, lovely person)&nbsp; </li><li>Manchester Honda Racing (Al Cordner)</li><li>Factory Connection</li><li>PJ1 Oils</li><li>WD-40</li><li>No Fear (David Solomon)</li><li>Maxima</li><li>Acerbis</li><li>Renthal</li></ul></td><td><ul><li>Pro Spec, Aktive, Reaktive, Aktive Reed systems (Al Carr)</li><li>FMF</li><li>Pro-Circuit</li><li>Works Connection</li><li><strong>The Kucowski Family</strong></li><li>Jeff Dunlap</li><li>Scott USA</li><li>Action Photos</li><li>M2R helmets</li><li>Powermist Race Fuels</li><li>NGK Spark Plugs</li><li>Twin Air (Jeremy Garges)</li></ul></td></tr></tbody></table><p><em>&nbsp;It takes a team to make any successful venture come off the ground.&nbsp; My team was solid.</em></p><p><em>Photos are in Chronological Ordering<br /></em></p>

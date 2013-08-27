@@ -1,7 +1,7 @@
 layout: post
 title: Simple Active Directory Search
 created: 2009-12-18 19:17:10 -05:00
-type: blog
+type: thought
 tag: Powershell
 tag: Microsoft
 

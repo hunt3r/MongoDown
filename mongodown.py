@@ -5,6 +5,7 @@ from lib import parse
 import settings_local
 from models import ContentItem
 from dateutil import parser
+from lib.models import ContentItem
 
 #Argparse
 argParser = argparse.ArgumentParser()
@@ -29,7 +30,9 @@ def parseMDFile(filePath):
 
 	return ContentItem(homepage=defaultKey(meta, "homepage", False), 
 						# Filter by content "type"
-						type=defaultKey(meta, "type", "item"), 
+						type=defaultKey(meta, "type", "item"),
+						# Item title
+						title=defaultKey(meta, "title", ""), 
 						# Used to filter by date on items
 						created=parser.parse(defaultKey(meta, "created", str(datetime.now()))),
 						# All Metadata as a map
@@ -55,7 +58,7 @@ def adaptMetaDataTypes(metaData):
 					#flatten it if we have length 1
 				else:
 					metaData[key][i] = adaptValue(metaData[key][i])
-		
+
 	return metaData
 
 def adaptValue(value):
