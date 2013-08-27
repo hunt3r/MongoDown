@@ -1,4 +1,10 @@
 
+/**
+ *logger
+ */
+window.log=function(){log.history=log.history||[];log.history.push(arguments);if(this.console){console.log(Array.prototype.slice.call(arguments))}};
+
+
 require.config({
   paths: {
     jquery: 'lib/jquery-min',
@@ -8,7 +14,7 @@ require.config({
     parse: 'lib/parse-min',
     templates: '../templates',
     utils: 'utils',
-    parse: 'lib/parse-min'
+    nprogress: 'lib/nprogress',
   }
 
 });
