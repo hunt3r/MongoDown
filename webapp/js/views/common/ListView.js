@@ -33,7 +33,7 @@ define(['jquery',
             });
         },
         render: function(){
-            var compiledTemplate = _.template( template, { items: this.collection } );
+            var compiledTemplate = _.template( template,   );
             this.$el.html(compiledTemplate);
             NProgress.done();
         }

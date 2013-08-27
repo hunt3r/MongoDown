@@ -1,6 +1,6 @@
 <% _.each(items, function(item){ %>
 <article>
-    <h1><a href='#items/<%= item.id %>'><%= item.get("meta").title %></a></h1>
+    <h1><a href='item/<%= item.id %>'><%= item.get("meta").title %></a></h1>
     <%= item.get("html") %>
 </article>
 <% }); %>

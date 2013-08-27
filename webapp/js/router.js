@@ -16,6 +16,7 @@ define([
             // Define some URL routes
             'projects': 'Projects',
             'thoughts': 'Thoughts',
+            "item/:id": "getItem",
             'home': 'Home',
             // Default
             '*actions': '404'
@@ -53,6 +54,14 @@ define([
             query.equalTo("type", "thought");
             var view = new ListView({"query": query});
         });
+        
+        /**
+         * Item detail view
+         */
+        app_router.on('route:Item', function(id){
+            var view = new DetailView({"id": id});
+        });
+
 
         /**
          * Homepage
