@@ -1,13 +1,12 @@
 define([
   'underscore',
   'backbone',
-  'models/ContentModel'
-], function(_, Backbone, ContentModel) {
-  
-  var ContentCollection = Backbone.Collection.extend({
-  	url: "api/content/",
-  	model: ContentModel,
-  });
+  'models/ContentItem',
+], function(_, Backbone, ContentItem) {
+
+    var ContentCollection =  Parse.Collection.extend({
+        model: ContentItem
+    })
 
   return ContentCollection;
 

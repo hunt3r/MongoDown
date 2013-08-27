@@ -1,18 +1,24 @@
 #!/usr/bin/env python
-
+from datetime import datetime
 import markdown, codecs, argparse
-from lib import mongo
-import config
+from lib import parse
+import settings_local
 from models import ContentItem
+from dateutil import parser
 
 #Argparse
-parser = argparse.ArgumentParser()
-parser.add_argument('--contentfolder', help='Path to your content folder', default="content")
-args = parser.parse_args()
+argParser = argparse.ArgumentParser()
+argParser.add_argument('--contentfolder', help='Path to your content folder', default="content")
+args = argParser.parse_args()
 
 #Markdown parser
 md = markdown.Markdown(extensions = ['meta'])
-mongoService = mongo.MongoService(config.development)
+parseService = parse.ParseService(settings_local.development)
+
+def defaultKey(dict, key, defaultVal):
+	if dict.has_key(key):
+		return dict[key]
+	return defaultVal
 
 def parseMDFile(filePath):
 	"""Parse the MD File to a dictionary"""
@@ -21,7 +27,17 @@ def parseMDFile(filePath):
 	html = md.convert(text)
 	meta = adaptMetaDataTypes(md.Meta)
 
-	return ContentItem(meta,html,filePath)
+	return ContentItem(homepage=defaultKey(meta, "homepage", False), 
+						# Filter by content "type"
+						type=defaultKey(meta, "type", "item"), 
+						# Used to filter by date on items
+						created=parser.parse(defaultKey(meta, "created", str(datetime.now()))),
+						# All Metadata as a map
+						meta=meta, 
+						# The HTML body
+						html=html, 
+						# Markdown that generated this
+						filePath=filePath)
 
 def getFiles(contentFolder):
 	"""Get the mardown files"""
@@ -34,12 +50,16 @@ def adaptMetaDataTypes(metaData):
 	for key in metaData.keys():
 		if type(metaData[key]) == list:
 			for i in range(len(metaData[key])):
-				metaData[key][i] = adaptValue(metaData[key][i])
+				if len(metaData[key]) == 1:
+					metaData[key] = adaptValue(metaData[key][i])
+					#flatten it if we have length 1
+				else:
+					metaData[key][i] = adaptValue(metaData[key][i])
 		
 	return metaData
 
 def adaptValue(value):
-	"""Process unicode to string and cast to the appropriate type before storing in mongo"""
+	"""Process unicode to string and cast to the appropriate type before storing in parse"""
 	value = value.encode('utf-8')
 	if(type(value) == str):
 		if value.lower() == "true":
@@ -64,7 +84,7 @@ def main():
 	for file in mdFiles:
 	 	contentObjects.append(parseMDFile(file))
 
-	mongoService.upsertContent(contentObjects)
+	parseService.upsertContent(contentObjects)
 
 
 # Go

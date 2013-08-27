@@ -25,11 +25,12 @@ define([
 
     var app_router = new AppRouter;
     
+
+
     app_router.on('route:showProjects', function(){
    
         // Call render on the module we loaded in via the dependency array
         var projectListView = new ProjectListView();
-        projectListView.render();
 
     });
 
@@ -52,7 +53,7 @@ define([
     // loaded initially.
     // var footerView = new FooterView();
 
-    Backbone.history.start();
+    Backbone.history.start({pushState: true});
   };
   return { 
     initialize: initialize

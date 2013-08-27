@@ -1,11 +1,10 @@
-title: My home
-slug: home
-homepage: true
-layout: portfolio
+title: My project Item
+tag: Project
+tag: Web
+layout: project
+type: project
 
-# A First Level Header
-## A Second Level Header
-### A Third Level Header
-#### A Fourth Level Header
-##### A Fifth Level Header
-###### A Sixth Level Header 
+My new project item here.
+
+* list
+* list2

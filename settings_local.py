@@ -1,1 +1,1 @@
-/Users/hunter/.mongodown-config
+/Users/hunter/Dropbox/shared/.mongodown-config

@@ -1,13 +1,7 @@
-title: My home
-slug: home
-slug: home2
+title: Welcome to my website
 homepage: true
-foo: test
-x: 2: value
-y: true
-z: string is the thing
 
-welcome!
+Welcome to my new parse.com website
 
 * list
 * list2
