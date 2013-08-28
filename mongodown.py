@@ -12,7 +12,7 @@ argParser.add_argument('--contentfolder', help='Path to your content folder', re
 args = argParser.parse_args()
 
 #Markdown parser
-md = markdown.Markdown(extensions = ['meta'])
+md = markdown.Markdown(extensions = ['meta', 'codehilite(linenums=True)', 'footnotes'])
 parseService = parse.ParseService(settings_local.development)
 
 def defaultKey(dict, key, defaultVal):
@@ -28,7 +28,7 @@ def parseMDFile(filePath):
 	html = md.convert(text)
 	meta = adaptMetaDataTypes(md.Meta)
 
-	return ContentItem(homepage=defaultKey(meta, "homepage", False), 
+	return ContentItem(homepage=defaultKey(meta, "homepage", False),
 						# Filter by content "type"
 						type=defaultKey(meta, "type", "item"),
 						# Item title
@@ -52,10 +52,13 @@ def getFiles(contentFolder):
 
 def adaptMetaDataTypes(metaData):
 	"""Adapts string values to a proper type"""
+	# These types will not be flattened
+	reservedArrayTypes = ["tag"]
+	
 	for key in metaData.keys():
 		if type(metaData[key]) == list:
 			for i in range(len(metaData[key])):
-				if len(metaData[key]) == 1:
+				if len(metaData[key]) == 1 and key not in reservedArrayTypes:
 					metaData[key] = adaptValue(metaData[key][i])
 					#flatten it if we have length 1
 				else:
