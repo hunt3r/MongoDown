@@ -16,6 +16,8 @@ define(['jquery',
         initialize: function(options) {
             var self = this;
             NProgress.start();
+            this.options = options;
+
             if(_.has(options, "query")) {
                 this.query = options.query;
             }
@@ -33,7 +35,10 @@ define(['jquery',
             });
         },
         render: function(){
-            var compiledTemplate = _.template( template,   );
+
+            var compiledTemplate = _.template( template, {"pageTitle": this.options.title || "",
+                                                            "items": this.collection});
+
             this.$el.html(compiledTemplate);
             NProgress.done();
         }

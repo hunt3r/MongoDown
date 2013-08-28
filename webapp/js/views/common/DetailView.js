@@ -3,11 +3,12 @@ define([
   'nprogress',
   'underscore',
   'backbone',
-  'text!templates/homeView.tpl.html'
-], function($, NProgress, _, Backbone, homeTemplate){
+  'models/ContentItem',
+  'text!templates/common/detail.tpl.html'
+], function($, NProgress, _, Backbone, ContentItem, template){
 
 
-  var ProjectsListView = Backbone.View.extend({
+  var DetailView = Backbone.View.extend({
     el: $("#page"),
     query: new Parse.Query(ContentItem),
     initialize: function(options) {
@@ -21,27 +22,23 @@ define([
       this.query.get(this.id, {
         success: function(model) {
           self.model = model;
+          self.render();
         },
         error: function(object, error) {
-
+          NProgress.done();
         }
       });
-    }
+    },
     render: function(){
       var self = this;
 
-      if(_.has(options, "model")) {
-        self.model = options.model;
-      }
-
-      $('.menu li').removeClass('active');
-      $('.menu li a[href="#projects"]').parent().addClass('active');
-      this.$el.html(homeTemplate, { pageTitle: "test", item: self.model });
+      var compiledTemplate = _.template(template, {"item": self.model });
+      this.$el.html(compiledTemplate);
       NProgress.done();
     }
 
   });
 
-  return ProjectsListView;
+  return DetailView;
   
 });

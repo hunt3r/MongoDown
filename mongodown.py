@@ -24,6 +24,7 @@ def defaultKey(dict, key, defaultVal):
 def parseMDFile(filePath):
 	"""Parse the MD File to a dictionary"""
 	inputFile = codecs.open(filePath, mode="r", encoding="utf-8")
+	print filePath
 	text = inputFile.read()
 	html = md.convert(text)
 	meta = adaptMetaDataTypes(md.Meta)
@@ -46,7 +47,7 @@ def getFiles(contentFolder):
 	"""Get the mardown files"""
 	from os import listdir
 	from os.path import isfile, join
-	return [ "%s/%s"%(contentFolder, f) for f in listdir(contentFolder) if isfile(join(contentFolder,f)) ]
+	return [ "%s/%s"%(contentFolder, f) for f in listdir(contentFolder) if isfile(join(contentFolder,f)) and f.endswith("md") or f.endswith("markdown") ]
 
 def adaptMetaDataTypes(metaData):
 	"""Adapts string values to a proper type"""

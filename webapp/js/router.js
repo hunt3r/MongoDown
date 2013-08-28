@@ -5,10 +5,9 @@ define([
     'backbone',
     'utils',
     'models/ContentItem',
-    'views/HomeView',
-    'views/projects/ProjectDetailView',
+    'views/common/DetailView',
     'views/common/ListView',
-], function($, _, Backbone, Utils, ContentItem, HomeView, ProjectDetailView, ListView) {
+], function($, _, Backbone, Utils, ContentItem, DetailView, ListView) {
 
     var AppRouter = Backbone.Router.extend({
         
@@ -16,7 +15,7 @@ define([
             // Define some URL routes
             'projects': 'Projects',
             'thoughts': 'Thoughts',
-            "item/:id": "getItem",
+            "item/:id": "Item",
             'home': 'Home',
             // Default
             '*actions': '404'
@@ -42,7 +41,7 @@ define([
      
                 var query = new Parse.Query(ContentItem);
                 query.equalTo("type", "project");
-                var view = new ListView({"query": query});
+                var view = new ListView({"title": "My Projects", "query": query});
 
         });
         
@@ -52,7 +51,7 @@ define([
         app_router.on('route:Thoughts', function(){
             var query = new Parse.Query(ContentItem);
             query.equalTo("type", "thought");
-            var view = new ListView({"query": query});
+            var view = new ListView({"title": "Some Thoughts", "query": query});
         });
         
         /**
