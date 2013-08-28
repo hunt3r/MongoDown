@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 from datetime import datetime
 import markdown, codecs, argparse
-from lib import parse
+from lib import parse, utils
 import settings_local
-from models import ContentItem
 from dateutil import parser
 from lib.models import ContentItem
 
 #Argparse
 argParser = argparse.ArgumentParser()
-argParser.add_argument('--contentfolder', help='Path to your content folder', default="content")
+argParser.add_argument('--contentfolder', help='Path to your content folder', required=True)
 args = argParser.parse_args()
 
 #Markdown parser
@@ -40,6 +39,8 @@ def parseMDFile(filePath):
 						meta=meta, 
 						# The HTML body
 						html=html, 
+						# Can be used for SEO style URLs if desired
+						slug=utils.createSlug(meta),
 						# Markdown that generated this
 						filePath=filePath)
 
