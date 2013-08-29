@@ -41,8 +41,10 @@ def parseMDFile(filePath):
 						html=html, 
 						# Can be used for SEO style URLs if desired
 						slug=utils.createSlug(meta),
-						# Markdown that generated this
-						filePath=filePath)
+						# Markdown file that generated this
+						filePath=filePath,
+						published=defaultKey(meta, "published", True),
+						tag=defaultKey(meta, "tag", []))
 
 def getFiles(contentFolder):
 	"""Get the mardown files"""
