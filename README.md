@@ -8,6 +8,12 @@ The idea is that you would use these object stores as an API to your content rat
 
 ## Libraries
 
+Install the following using pip into your virtualenv
+
+```
+pip install PIL requests 
+```
+
 ### Python
 - https://github.com/lullis/parse_rest
 

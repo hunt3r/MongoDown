@@ -13,24 +13,24 @@ sizes / prefixes for a given src image
 class Photo():
 
     """ Class to represent a Photo, also handles applying presets to itself"""
-    def __init__(self, gallery, filename, output_path, preset):
-        self.gallery = gallery
+    def __init__(self, filename, settings, absolute_src_path, output_path, preset):
+        self.regenerate = settings["regenerate_existing"]
         self.filename = filename
-        self.input_file = "%s%s%s" % (self.gallery.absolute_src_path, os.sep, self.filename)
+        self.input_file = "%s%s%s" % (absolute_src_path, os.sep, self.filename)
         self.output_path = output_path
         self.output_file = "%s%s%s" % (output_path, os.sep, self.filename)
         self.preset = preset
-        self.image = None
-        self.width = None
-        self.height = None
-        self.image = Image.open(self.input_file)
-        self.process_image()
-        self.image = Image.open(self.output_file)
-        self.width, self.height = self.image.size
 
-    def process_image(self):
+        image = Image.open(self.input_file)
+        self.process_image(image)
+        image = Image.open(self.output_file)
+
+        self.width, self.height = image.size
+        self.url = None
+
+    def process_image(self, image):
         """Responsible for applying presets to the Image obj"""
-        if not os.path.isfile(self.output_file) or self.gallery.gallery_settings["regenerate_existing"]:
+        if not os.path.isfile(self.output_file) or self.regenerate:
             
             # Actions should be processed in order of appearance in actions array
             for i in range(len(self.preset["actions"])):
@@ -40,17 +40,17 @@ class Photo():
                     if not "from" in a:
                         a["from"] = (0.5, 0.5) # crop from middle by default
 
-                    self.image = ImageOps.fit(self.image, (a["width"], a["height"],), method=Image.ANTIALIAS, centering=a["from"])
+                    image = ImageOps.fit(image, (a["width"], a["height"],), method=Image.ANTIALIAS, centering=a["from"])
                 
                 if a["type"] == "greyscale":
-                    self.image = ImageOps.grayscale(self.image)
+                    image = ImageOps.grayscale(image)
 
                 if a["type"] == "resize":
-                    self.image.thumbnail((a["width"], a["height"]), Image.NEAREST)
+                    image.thumbnail((a["width"], a["height"]), Image.NEAREST)
                 
                 # TODO: Write other useful transforms here!
             
-            self.image.save(self.output_file, "JPEG")
+            image.save(self.output_file, "JPEG")
 
 
 
@@ -62,7 +62,6 @@ class Gallery():
         self.settings = settings
         self.gallery_settings = settings["gallery"]
         self.gallery_name = None
-        self.files = []
         self.photos = []
         self.absolute_src_path = None
         self.absolute_output_path = None
@@ -79,43 +78,46 @@ class Gallery():
                                                     os.sep,
                                                     self.gallery_name)
 
-            self.create_preset_folders() 
-            self.create_preset_images()
-            self.uploadFiles()
+
+    def generate(self):
+        self.create_preset_folders() 
+        self.create_preset_images()
+        self.uploadFiles()
 
     def uploadFiles(self):
         print "uploading files to parse"
-        for photoInstances in self.photos:
-            for key in photoInstances.keys():
-                f = photoInstances[key]
+        for photoSets in self.photos:
+            for key in photoSets.keys():
+                f = photoSets[key]
                 if self.settings.has_key("parse"):
-                    files = {'file': open(f.output_file, 'rb')}
+                    #TODO: abstract this to the parse library or utility class
+                    url = "%s/%s" % (self.settings["parse"]["rest_file_url"], f["filename"])
+                    data = open(f["output_file"], 'rb')
                     headers = {
                         'X-Parse-Application-Id': self.settings["parse"]["application_id"],
                         'X-Parse-REST-API-Key': self.settings["parse"]["rest_api_key"],
-                        'Content-Type': "image/jpeg"
+                        'content-type': "image/jpeg"
                     }
-                    print headers
-                    url = "%s/%s" % (self.settings["parse"]["rest_file_url"], f.filename)
-                    print url
-                    r = requests.post(url, files=files)
-                    print r.text
+                    r = requests.post(url, data=data, headers=headers)
+                    if r.status_code == 201:
+                        f["url"] = r.json()["url"]
+
                 else:
-                    print "fail uplaod"
+                    print "failed upload"
 
 
 
     def create_preset_images(self):
         """Creates the image assets for each preset and returns a PhotoSet object"""
         for f in self.get_files_from_data():
-            photoInstances = {}
+            photoSets = {}
             for preset in self.gallery_settings["presets"]:
                 preset_dir = "%s%s%s" % (self.absolute_output_path,
                                          os.sep, 
                                          preset["name"])
-                photoInstances[preset["name"]] = Photo(self, f, preset_dir, preset)
+                photoSets[preset["name"]] = Photo(f, self.gallery_settings, self.absolute_src_path, preset_dir, preset).__dict__
                 
-            self.photos.append(photoInstances)
+            self.photos.append(photoSets)
             
     def create_preset_folders(self):
         """Creates the folder structure for a gallery"""
@@ -142,12 +144,3 @@ class Gallery():
         return [ f for f in listdir(self.absolute_src_path) if isfile(join(self.absolute_src_path,f)) and f != ".DS_Store" ]
 
 
-
-
-# def get_galleries(settings, meta):
-#     if "gallery" in meta.keys():
-#         meta["gallery"] = Gallery(settings, meta)
-
-# def register():
-#     # signals.article_settings_init.connect(init_gallery_plugin)
-#     signals.article_generate_context.connect(get_galleries)

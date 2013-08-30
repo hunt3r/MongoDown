@@ -5,20 +5,35 @@ from lib import parse, utils
 import settings_local
 from dateutil import parser
 from lib.models import ContentItem
+from lib.gallery import Gallery
+import pprint
 
 #Argparse
 argParser = argparse.ArgumentParser()
 argParser.add_argument('--contentfolder', help='Path to your content folder', required=True)
 args = argParser.parse_args()
 
+#Load environment
+settings = settings_local.development
+
 #Markdown parser
 md = markdown.Markdown(extensions = ['meta', 'codehilite(linenums=True)', 'footnotes'])
-parseService = parse.ParseService(settings_local.development)
+parseService = parse.ParseService(settings)
 
 def defaultKey(dict, key, defaultVal):
 	if dict.has_key(key):
 		return dict[key]
 	return defaultVal
+
+def createItemGallery(meta):
+	if meta.has_key("gallery"):
+		gallery = Gallery(settings, meta)
+		gallery.generate()
+		return {"photos" : gallery.photos,
+				"name" : gallery.gallery_name}
+	else:
+		return None
+	
 
 def parseMDFile(filePath):
 	"""Parse the MD File to a dictionary"""
@@ -27,7 +42,8 @@ def parseMDFile(filePath):
 	text = inputFile.read()
 	html = md.convert(text)
 	meta = adaptMetaDataTypes(md.Meta)
-
+	gallery = createItemGallery(meta)
+	pprint.pprint(gallery)
 	return ContentItem(homepage=defaultKey(meta, "homepage", False),
 						# Filter by content "type"
 						type=defaultKey(meta, "type", "item"),
@@ -41,6 +57,8 @@ def parseMDFile(filePath):
 						html=html, 
 						# Can be used for SEO style URLs if desired
 						slug=utils.createSlug(meta),
+						# A gallery to pull content from
+						gallery=gallery,
 						# Markdown file that generated this
 						filePath=filePath,
 						published=defaultKey(meta, "published", True),
