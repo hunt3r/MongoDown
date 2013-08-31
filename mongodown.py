@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from datetime import datetime
-import markdown, codecs, argparse
+import markdown, codecs, argparse, os
 from lib import parse, utils
 import settings_local
 from dateutil import parser
@@ -15,6 +15,7 @@ args = argParser.parse_args()
 
 #Load environment
 settings = settings_local.development
+touchfile = "%s%s%s" % (args.contentfolder, os.sep, ".mongodown")
 
 #Markdown parser
 md = markdown.Markdown(extensions = ['meta', 'codehilite(linenums=True)', 'footnotes'])
@@ -38,37 +39,33 @@ def createItemGallery(meta):
 def parseMDFile(filePath):
 	"""Parse the MD File to a dictionary"""
 	inputFile = codecs.open(filePath, mode="r", encoding="utf-8")
-	print filePath
 	text = inputFile.read()
 	html = md.convert(text)
 	meta = adaptMetaDataTypes(md.Meta)
-	gallery = createItemGallery(meta)
-	pprint.pprint(gallery)
-	return ContentItem(homepage=defaultKey(meta, "homepage", False),
-						# Filter by content "type"
-						type=defaultKey(meta, "type", "item"),
-						# Item title
-						title=defaultKey(meta, "title", ""), 
-						# Used to filter by date on items
-						created=parser.parse(defaultKey(meta, "created", str(datetime.now()))),
-						# All Metadata as a map
-						meta=meta, 
-						# The HTML body
-						html=html, 
-						# Can be used for SEO style URLs if desired
-						slug=utils.createSlug(meta),
-						# A gallery to pull content from
-						gallery=gallery,
-						# Markdown file that generated this
-						filePath=filePath,
-						published=defaultKey(meta, "published", True),
-						tag=defaultKey(meta, "tag", []))
-
-def getFiles(contentFolder):
-	"""Get the mardown files"""
-	from os import listdir
-	from os.path import isfile, join
-	return [ "%s/%s"%(contentFolder, f) for f in listdir(contentFolder) if isfile(join(contentFolder,f)) and f.endswith("md") or f.endswith("markdown") ]
+	return ContentItem(
+			# Can be used to promote certain items to the homepage
+			homepage=defaultKey(meta, "homepage", False),
+			# Filter by content "type"
+			type=defaultKey(meta, "type", "item"),
+			# Item title
+			title=defaultKey(meta, "title", ""),
+			# Used to filter by date on items
+			created=parser.parse(defaultKey(meta, "created", str(datetime.now()))),
+			# All Metadata as a map
+			meta=meta, 
+			# The HTML body
+			html=html, 
+			# Can be used for SEO style URLs if desired
+			slug=utils.createSlug(meta),
+			# A gallery to pull content from
+			gallery=createItemGallery(meta),
+			# Markdown file that generated this
+			filePath=filePath,
+			# Explicitly mark some items as unpublished
+			published=defaultKey(meta, "published", True),
+			#a list of tags
+			tag=defaultKey(meta, "tag", [])
+			)
 
 def adaptMetaDataTypes(metaData):
 	"""Adapts string values to a proper type"""
@@ -102,18 +99,33 @@ def adaptValue(value):
 			#Just return the value as a string
 		    return value
 	
-
+def getContentDeltas(allFiles):
+	deltas = []
+	for file in allFiles:
+		if utils.getFileModifiedTime(file) > utils.getFileModifiedTime(touchfile):
+			deltas.append(file)
+	return deltas
 
 def main():
+	files = utils.getFiles(args.contentfolder, settings["content_md_extension"])
 
-	mdFiles = getFiles(args.contentfolder)
-	
+	if not settings["drop"]:
+		files = getContentDeltas(files)
+
+	if len(files) == 0:
+		print "Nothing to do, no changes have been made. Start writing..."
+		return
+
 	contentObjects = []
-	for file in mdFiles:
-	 	contentObjects.append(parseMDFile(file))
+	for file in files:
+		try:
+	 		contentObjects.append(parseMDFile(file))
+	 	except:
+	 		print "Print error parsing file: %s" % file
 
-	parseService.upsertContent(contentObjects)
+	#parseService.upsertContent(contentObjects)
 
+	utils.touch(touchfile)
 
 # Go
 if __name__ == "__main__":
