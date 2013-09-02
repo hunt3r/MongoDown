@@ -14,6 +14,4 @@ class LogMixin(object):
     def logger(self):
         logging.config.fileConfig('logging.ini', disable_existing_loggers=False)
         logger = logging.getLogger(self.__class__.__name__)
-
-
         return logger

@@ -21,7 +21,7 @@ class ContentParser(Base, LogMixin):
         #Markdown parser
         self.md = markdown.Markdown(extensions = ['meta', 'codehilite(linenums=True)', 'footnotes'])
         self.parseService = ParseService(self.settings)
-        
+
     def createItemGallery(self, meta):
         if meta.has_key("gallery"):
             gallery = Gallery(self.settings, meta)
@@ -40,13 +40,13 @@ class ContentParser(Base, LogMixin):
         meta = self.adaptMetaDataTypes(self.md.Meta)
         return ContentItem(
                 # Can be used to promote certain items to the homepage
-                homepage=getattr(meta, "homepage", False),
+                homepage=meta.get("homepage", False),
                 # Filter by content "type"
-                type=getattr(meta, "type", "item"),
+                type=meta.get("type", "item"),
                 # Item title
-                title=getattr(meta, "title", ""),
+                title=meta.get("title", ""),
                 # Used to filter by date on items
-                created=parser.parse(getattr(meta, "created", str(datetime.now()))),
+                created=parser.parse(meta.get("created", str(datetime.now()))),
                 # All Metadata as a map
                 meta=meta, 
                 # The HTML body
@@ -58,9 +58,9 @@ class ContentParser(Base, LogMixin):
                 # Markdown file that generated this
                 filePath=filePath,
                 # Explicitly mark some items as unpublished
-                published=getattr(meta, "published", True),
+                published=meta.get("published", True),
                 #a list of tags
-                tag=getattr(meta, "tag", [])
+                tag=meta.get("tag", [])
                 )
 
     def adaptMetaDataTypes(self, metaData):
