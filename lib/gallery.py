@@ -137,7 +137,7 @@ class GalleryService(Base, LogMixin):
         adapted = []
         for photoSets in photos:
             for key in photoSets.keys():
-                response = self.client.post(photoSets[key])
+                response = self.client.post(photoSets[key]["output_file"], photoSets[key]["filename"])
                 photoSets[key]["parseName"] = response["name"]
                 photoSets[key]["url"] = response["url"]
             adapted.append(photoSets)
