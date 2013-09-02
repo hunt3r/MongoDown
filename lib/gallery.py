@@ -1,12 +1,16 @@
 import logging, json, os, sys, time, Image, requests
 from PIL import ImageOps
+from parse.file_rest_client import ParseFileRestClient
+import logging
+from models import Base, LogMixin
 
 """
-Python Gallery settings
+Python Gallery
 
 The aim of this code is to make a gallery object which contains a collection of
 image objects that represet an image on a server, these collections generally contain multiple image
-sizes / prefixes for a given src image
+sizes / prefixes for a given src image.  This will help you with assets that need to be cropped / resized
+for different areas of your layout.
 
 """
 
@@ -27,6 +31,7 @@ class Photo():
 
         self.width, self.height = image.size
         self.url = None
+        self.parseName = None
 
     def process_image(self, image):
         """Responsible for applying presets to the Image obj"""
@@ -67,6 +72,7 @@ class Gallery():
         self.absolute_output_path = None
         self.meta = meta
         self.preset_dir = []
+        self.service = GalleryService(settings, meta)
 
         if "gallery" in self.meta:
             self.gallery_name = self.meta["gallery"]
@@ -82,30 +88,7 @@ class Gallery():
     def generate(self):
         self.create_preset_folders() 
         self.create_preset_images()
-        self.uploadFiles()
-
-    def uploadFiles(self):
-        print "uploading files to parse"
-        for photoSets in self.photos:
-            for key in photoSets.keys():
-                f = photoSets[key]
-                if self.settings.has_key("parse"):
-                    #TODO: abstract this to the parse library or utility class
-                    url = "%s/%s" % (self.settings["parse"]["rest_file_url"], f["filename"])
-                    data = open(f["output_file"], 'rb')
-                    headers = {
-                        'X-Parse-Application-Id': self.settings["parse"]["application_id"],
-                        'X-Parse-REST-API-Key': self.settings["parse"]["rest_api_key"],
-                        'content-type': "image/jpeg"
-                    }
-                    r = requests.post(url, data=data, headers=headers)
-                    if r.status_code == 201:
-                        f["url"] = r.json()["url"]
-
-                else:
-                    print "failed upload"
-
-
+        self.photos = self.service.uploadFiles(self.photos)
 
     def create_preset_images(self):
         """Creates the image assets for each preset and returns a PhotoSet object"""
@@ -135,12 +118,40 @@ class Gallery():
                 if not os.path.exists(preset_dir):
                     os.makedirs(preset_dir)
         else:
-            print "You have no presets defined, please add gallery_presets array to settings file, with at least one preset defined, see docs."
+            self.logger.error("You have no presets defined, please add gallery_presets array to settings file, with at least one preset defined, see docs.")
     
     def get_files_from_data(self):
-        print "getting files for %s" % self.absolute_src_path
         from os import listdir
         from os.path import isfile, join
         return [ f for f in listdir(self.absolute_src_path) if isfile(join(self.absolute_src_path,f)) and f != ".DS_Store" ]
 
+
+class GalleryService(Base, LogMixin):
+    import logging
+    def __init__(self, settings, contentItem=None):
+        self.settings = settings
+        self.client = ParseFileRestClient(settings)
+
+    def uploadFiles(self, photos):
+        logging.info("uploading files to parse")
+        adapted = []
+        for photoSets in photos:
+            for key in photoSets.keys():
+                response = self.client.post(photoSets[key])
+                photoSets[key]["parseName"] = response["name"]
+                photoSets[key]["url"] = response["url"]
+            adapted.append(photoSets)
+
+        return adapted
+
+    def cleanupOldPhotos(self, photos):
+        for photoset in photos:
+            for key in photoset.keys():
+                photo = photoset[key]
+                if photo.has_key("parseName"):
+                    self.logger.info("Deleting old file: %s" % photo["parseName"])
+                    try:
+                        self.client.delete(photo["parseName"])
+                    except ParseError:
+                        self.logger.error("Could not delete file: %s" % photo["parseName"])
 

@@ -3,3 +3,5 @@
 venv
 nginx
 nohup.out
+*.log
+test_data/output/

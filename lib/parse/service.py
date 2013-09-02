@@ -1,53 +1,46 @@
 from parse_rest.connection import register
 from parse_rest.connection import ParseBatcher
 from parse_rest.query import QueryResourceDoesNotExist
-from models import ContentItem
-import pprint
+from file_rest_client import ParseFileRestClient
+from lib.gallery import GalleryService
+from lib.models import ContentItem, Base, LogMixin
 
-
-class ParseService(object):
+class ParseService(Base, LogMixin):
 
     def __init__(self, settings):
         self.settings = settings
         self.fileRestClient = ParseFileRestClient(settings)
         self.galleryService = GalleryService(settings)
-
         register(self.settings["parse"]["application_id"], self.settings["parse"]["rest_api_key"])
         self.batcher = ParseBatcher()
 
-    def get(self, item):
-        return ContentItem.Query.get(filePath=item.filePath)
-
-    def post(self, item):
-        return item.save()
-
-    def upsertContent(self, contentObjects):
+    def upsertContent(self, contentContentItems):
 
         self.setup()
         
-        for item in contentObjects:
+        for item in contentContentItems:
             try:
                 oldItem = ContentItem.Query.get(filePath=item.filePath)
-                print "Updating item: '%s'" % oldItem.filePath
+                self.logger.info("Found existing file item: '%s'" % oldItem.filePath)
                 
                 if(oldItem.gallery != None):
-                    print "has gallery"
-                    #pprint.pprint(oldItem.gallery)
+                    self.logger.info("Deleting old gallery files...")
                     self.galleryService.cleanupOldPhotos(oldItem.gallery["photos"])
 
                 oldItem.delete()
+
                 item.save()
 
             except QueryResourceDoesNotExist:
-                print "Creating new item: '%s'" % item.filePath 
+                self.logger.info("Creating new item: '%s'" % item.filePath)
                 item.save()
                 
     def setup(self):
         # There is no truncate on parse, so we iterate and delete all...
         if(self.settings["drop"]):
             items = ContentItem.Query.all()
-            #print dir(items)
-            print "Truncating items... %s" % items.count()
+            #self.logger.info(dir(items)
+            self.logger.info("Truncating items... %s" % items.count())
             if items.count() > 0:
                 self.batcher.batch_delete(items)
-            print "Done."
+            self.logger.info("Done.")

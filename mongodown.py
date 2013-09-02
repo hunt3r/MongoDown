@@ -6,7 +6,8 @@ import settings_local
 from dateutil import parser
 from lib.models import ContentItem
 from lib.gallery import Gallery
-import pprint
+import pprint, logging, sys
+from lib.parse.service import ParseService 
 
 #Argparse
 argParser = argparse.ArgumentParser()
@@ -19,7 +20,7 @@ touchfile = "%s%s%s" % (args.contentfolder, os.sep, ".mongodown")
 
 #Markdown parser
 md = markdown.Markdown(extensions = ['meta', 'codehilite(linenums=True)', 'footnotes'])
-parseService = parse.ParseService(settings)
+parseService = ParseService(settings)
 
 def defaultKey(dict, key, defaultVal):
 	if dict.has_key(key):
@@ -101,10 +102,13 @@ def adaptValue(value):
 	
 def getContentDeltas(allFiles):
 	deltas = []
-	for file in allFiles:
-		if utils.getFileModifiedTime(file) > utils.getFileModifiedTime(touchfile):
-			deltas.append(file)
-	return deltas
+	try:
+		for file in allFiles:
+			if utils.getFileModifiedTime(file) > utils.getFileModifiedTime(touchfile):
+				deltas.append(file)
+		return deltas
+	except:
+		return allFiles
 
 def main():
 	files = utils.getFiles(args.contentfolder, settings["content_md_extension"])
@@ -121,9 +125,10 @@ def main():
 		try:
 	 		contentObjects.append(parseMDFile(file))
 	 	except:
-	 		print "Print error parsing file: %s" % file
+	 		logging.error("Print error parsing file: %s" % file)
+	 		logging.error(sys.exc_info()[0])
 
-	#parseService.upsertContent(contentObjects)
+	parseService.upsertContent(contentObjects)
 
 	utils.touch(touchfile)
 
