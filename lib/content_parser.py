@@ -25,9 +25,12 @@ class ContentParser(Base, LogMixin):
 
         # Main process steps
         self.setup()
-        self.cleanupRevisions()
-        self.decorateContentObjectsWithPlugins()
-        self.persist()
+
+        if len(self.contentItems) > 0 or len(self.previousRevisions) > 0:
+            self.cleanupRevisions()
+            self.decorateContentObjectsWithPlugins()
+            self.persist()
+
         self.complete()
 
     def parseMarkdownFile(self, filePath):
@@ -105,7 +108,6 @@ class ContentParser(Base, LogMixin):
 
     def cleanupRevisions(self):        
         """Removes any content from previous revision that might be left behind on the server"""
-        self.logger.info("Starting cleanup of old revisions")
         for i in range(0, len(self.previousRevisions)):
             for metaKey in self.previousRevisions[i].meta.keys():
                 if metaKey in self.settings["plugins"]:
@@ -117,7 +119,7 @@ class ContentParser(Base, LogMixin):
                     except:
                         self.logger.error("Plugin cleanup failed: %s " % metaKey)
                         traceback.print_exc(file=sys.stdout)
-            
+
             self.previousRevisions[i].delete()
 
     def decorateContentObjectsWithPlugins(self):
@@ -140,7 +142,7 @@ class ContentParser(Base, LogMixin):
             self.logger.info("Updating existing item to new revision: '%s'" % filePath)
             self.previousRevisions.append(oldItem)
         except QueryResourceDoesNotExist:
-            self.logger.debug("Creating new item: %s" % filePath)
+            self.logger.info("Creating new item: %s" % filePath)
         except:
             self.logger.error("General content staging error: %s" % sys.exc_info()[0])
             traceback.print_exc(file=sys.stdout)
@@ -170,5 +172,6 @@ class ContentParser(Base, LogMixin):
 
 
     def complete(self):
+        """The last step run in the process"""
         utils.touch(self.touchfile)
         self.logger.info("--- Complete!")

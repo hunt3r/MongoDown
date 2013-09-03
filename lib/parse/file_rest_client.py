@@ -10,6 +10,7 @@ class ParseFileRestClient(Base, LogMixin):
             raise ParseError("Missing parse api information")
 
     def post(self, filepath, filename):
+        """Post a new file item to parse.com"""
         url = "%s/%s" % (self.settings["parse"]["rest_file_url"], filename)
         data = open(filepath, 'rb')
         headers = {
@@ -21,6 +22,7 @@ class ParseFileRestClient(Base, LogMixin):
         return r.json()
 
     def delete(self, filename):
+        """Delete a file from Parse.com"""
         url = "%s/%s" % (self.settings["parse"]["rest_file_url"], filename)
 
         headers = {

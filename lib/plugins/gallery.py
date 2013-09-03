@@ -136,6 +136,7 @@ class GalleryService(Base, LogMixin):
         self.client = ParseFileRestClient(settings)
 
     def uploadFiles(self, photos):
+        """Upload all the photos from this gallery to server, and adapt each photo w/ response that includes URL"""
         logging.info("uploading files to parse")
         adapted = []
         for photoSets in photos:
@@ -149,6 +150,7 @@ class GalleryService(Base, LogMixin):
         return adapted
 
     def cleanupOldPhotos(self, photos):
+        """Deletes all the photos from an old revision"""
         for photoset in photos:
             for key in photoset.keys():
                 photo = photoset[key]
