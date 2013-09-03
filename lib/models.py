@@ -1,4 +1,4 @@
-import json, logging
+import json, logging, traceback
 from parse_rest.datatypes import Object
 import logging.config
 class ContentItem(Object):

@@ -12,9 +12,8 @@ args = argParser.parse_args()
 settings = settings_local.development
 
 def main():
-	parser = content_parser.ContentParser(settings, getattr(args, "contentfolder", None))
-	parser.generate()
-	
+	content_parser.ContentParser(settings, getattr(args, "contentfolder", None))
+
 # Go
 if __name__ == "__main__":
     main()

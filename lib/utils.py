@@ -1,5 +1,5 @@
 """This class is used for various little helpers"""
-import urllib, re, os, datetime, fnmatch
+import urllib, re, os, datetime, fnmatch, inspect
 
 def createSlug(meta):
     """Create a human readable slug string that can be used to generate more descriptive URLs"""
@@ -21,9 +21,9 @@ def getFiles(basePath, extension):
             matches.append(os.path.join(root, filename))
     return matches
 
-def getFileModifiedTime(filename):
+def getFileModifiedTime(fileName):
     """Get the last modified date of a file"""
-    t = os.path.getmtime(filename)
+    t = os.path.getmtime(fileName)
     return datetime.datetime.fromtimestamp(t)
 
 def touch(filePath):
