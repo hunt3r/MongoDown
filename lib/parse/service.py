@@ -14,28 +14,13 @@ class ParseService(Base, LogMixin):
         register(self.settings["parse"]["application_id"], self.settings["parse"]["rest_api_key"])
         self.batcher = ParseBatcher()
 
-    def upsertContent(self, contentContentItems):
+    def getByFilePath(self, filePath):
+        return ContentItem.Query.get(filePath=filePath)
 
-        self.setup()
-        
-        for item in contentContentItems:
-            try:
-                oldItem = ContentItem.Query.get(filePath=item.filePath)
-                self.logger.info("Found existing file item: '%s'" % oldItem.filePath)
-                
-                if(oldItem.gallery != None):
-                    self.logger.info("Deleting old gallery files...")
-                    self.galleryService.cleanupOldPhotos(oldItem.gallery["photos"])
+    def post(self, item):
+        return item.save()
 
-                oldItem.delete()
-
-                item.save()
-
-            except QueryResourceDoesNotExist:
-                self.logger.info("Creating new item: '%s'" % item.filePath)
-                item.save()
-                
-    def setup(self):
+    def drop(self):
         # There is no truncate on parse, so we iterate and delete all...
         if(self.settings["drop"]):
             items = ContentItem.Query.all()

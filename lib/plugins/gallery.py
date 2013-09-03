@@ -1,8 +1,8 @@
 import logging, json, os, sys, time, Image, requests
 from PIL import ImageOps
-from parse.file_rest_client import ParseFileRestClient
+from lib.parse.file_rest_client import ParseFileRestClient
 import logging
-from models import Base, LogMixin
+from lib.models import Base, LogMixin
 
 """
 Python Gallery
@@ -57,22 +57,19 @@ class Photo():
             
             image.save(self.output_file, "JPEG")
 
-
-
-
-
-class Gallery():
-    """Represents a Gallery, iterate of gallery.photos in your Template"""
-    def __init__(self, settings, meta):
+class Gallery(Base, LogMixin):
+    """Represents a Gallery plugin"""
+    def __init__(self, settings, contentItem):
+        self.contentItem = contentItem
+        self.meta = contentItem.meta
         self.settings = settings
         self.gallery_settings = settings["gallery"]
         self.gallery_name = None
         self.photos = []
         self.absolute_src_path = None
         self.absolute_output_path = None
-        self.meta = meta
         self.preset_dir = []
-        self.service = GalleryService(settings, meta)
+        self.service = GalleryService(settings, self.meta)
 
         if "gallery" in self.meta:
             self.gallery_name = self.meta["gallery"]
@@ -89,6 +86,7 @@ class Gallery():
         self.create_preset_folders() 
         self.create_preset_images()
         self.photos = self.service.uploadFiles(self.photos)
+        return {"photos" : self.photos, "name" : self.gallery_name}
 
     def create_preset_images(self):
         """Creates the image assets for each preset and returns a PhotoSet object"""
@@ -120,14 +118,19 @@ class Gallery():
         else:
             self.logger.error("You have no presets defined, please add gallery_presets array to settings file, with at least one preset defined, see docs.")
     
+    def cleanup(self,):
+        """Used to cleanup old content items when there are updates, old photos will
+            be removed"""
+        self.logger.info("Cleaning up old photos")
+        self.service.cleanupOldPhotos(self.contentItem.gallery["photos"])
+
     def get_files_from_data(self):
         from os import listdir
         from os.path import isfile, join
         return [ f for f in listdir(self.absolute_src_path) if isfile(join(self.absolute_src_path,f)) and f != ".DS_Store" ]
 
-
 class GalleryService(Base, LogMixin):
-    import logging
+    """Gallery plugin service functions"""
     def __init__(self, settings, contentItem=None):
         self.settings = settings
         self.client = ParseFileRestClient(settings)
