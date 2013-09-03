@@ -11,11 +11,30 @@ The idea is that you would use these object stores as an API to your content rat
 Install the following using pip into your virtualenv
 
 ```
-pip install PIL requests 
+pip install requests 
+pip install git+https://github.com/dgrtwo/ParsePy.git
 ```
+
+## Plugins
+
+TODO: Explain plugin interface here
+
+### Gallery
+
+```
+brew install pil
+pip install PIL
+```
+
+- Add gallery to plugins list in your settings file
+
 
 ### Python
 - https://github.com/lullis/parse_rest
+
+##Sample webapp
+
+I provide a sample web app, which is very rudimentary, but demonstrates the advantages to this approach over traditional static site generators.  Check out the router.js for an example of how to create adhoc queries and inflate your views.
 
 ### Javascript
 - https://www.parse.com/docs/js_guide
