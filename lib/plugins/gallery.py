@@ -55,7 +55,7 @@ class Photo():
                 
                 # TODO: Write other useful transforms here!
             
-            image.save(self.output_file, "JPEG")
+            image.save(self.output_file)
 
 class Gallery(Base, LogMixin):
     """Represents a Gallery plugin"""
@@ -143,8 +143,9 @@ class GalleryService(Base, LogMixin):
             for key in photoSets.keys():
                 self.logger.info("Uploading file: %s" % photoSets[key]["output_file"])
                 response = self.client.post(photoSets[key]["output_file"], photoSets[key]["filename"])
-                photoSets[key]["parseName"] = response["name"]
-                photoSets[key]["url"] = response["url"]
+                if response.has_key("url"):
+                    photoSets[key]["parseName"] = response["name"]
+                    photoSets[key]["url"] = response["url"]
             adapted.append(photoSets)
 
         return adapted

@@ -110,7 +110,7 @@ class ContentParser(Base, LogMixin):
         """Removes any content from previous revision that might be left behind on the server"""
         for i in range(0, len(self.previousRevisions)):
             for metaKey in self.previousRevisions[i].meta.keys():
-                if metaKey in self.settings["plugins"]:
+                if metaKey in self.settings["plugins"] and self.previousRevisions[i].meta[metaKey] != None:
                     self.logger.info("Removing %s content for plugin" % metaKey)
                     try:
                         plugin = plugins.getPluginInstance(metaKey, self.settings, self.previousRevisions[i])

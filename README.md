@@ -6,7 +6,7 @@ Currently, the project works w/ Parse.com, but I'd like to make more adapters an
 
 The idea is that you would use these object stores as an API to your content rather than generating static files.  This way you can create single page applications that load content via API.
 
-## Libraries
+## Installation
 
 Install the following using pip into your virtualenv
 
