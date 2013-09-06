@@ -16,4 +16,3 @@ class MongoService(object):
 
 		for obj in contentObjects:
 			self.collection.insert(obj.__dict__)
-			#print obj.__dict__
