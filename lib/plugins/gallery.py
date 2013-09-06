@@ -1,7 +1,7 @@
 import logging, json, os, sys, time, Image, requests
 from PIL import ImageOps
 from lib.parse.file_rest_client import ParseFileRestClient
-import logging
+import logging, pykka
 from lib.models import Base, LogMixin
 
 """
@@ -133,32 +133,42 @@ class GalleryService(Base, LogMixin):
     """Gallery plugin service functions"""
     def __init__(self, settings, contentItem=None):
         self.settings = settings
-        self.client = ParseFileRestClient(settings)
+        #self.client = ParseFileRestClient(settings)
+        # Start resolvers
+        self.clients = [ParseFileRestClient.start(self.settings).proxy() for _ in range(self.settings["gallery"]["queue_size"])]
+                # Distribute work to contentItemActors (not blocking)
+        
+
 
     def uploadFiles(self, photos):
         """Upload all the photos from this gallery to server, and adapt each photo w/ response that includes URL"""
         logging.info("uploading files to parse")
         adapted = []
-        for photoSets in photos:
+        for i, photoSets in enumerate(photos):
+            obj = {}
             for key in photoSets.keys():
                 self.logger.info("Uploading file: %s" % photoSets[key]["output_file"])
-                response = self.client.post(photoSets[key]["output_file"], photoSets[key]["filename"])
-                if response.has_key("url"):
-                    photoSets[key]["parseName"] = response["name"]
-                    photoSets[key]["url"] = response["url"]
-            adapted.append(photoSets)
+                obj[key] = self.clients[i % len(self.clients)].post(photoSets[key]["output_file"], photoSets[key]["filename"])
+            
+            photos[i] = obj
 
-        return adapted
+        for i, photoSets in enumerate(photos):
+            obj = {}
+            for key in photoSets.keys():
+                obj[key] = photoSets[key].get()
+            photos[i] = obj 
+
+        return photos
 
     def cleanupOldPhotos(self, photos):
         """Deletes all the photos from an old revision"""
-        for photoset in photos:
-            for key in photoset.keys():
-                photo = photoset[key]
-                if photo.has_key("parseName"):
-                    self.logger.info("Deleting old file: %s" % photo["parseName"])
-                    try:
-                        self.client.delete(photo["parseName"])
-                    except ParseError:
-                        self.logger.error("Could not delete file: %s" % photo["parseName"])
+        for i, photoSets in enumerate(photos):
+            for key in photoSets.keys():
+                photo = photoSets[key]
+                self.logger.info("Deleting old file: %s" % photo["name"])
+                try:
+                    self.clients[i % len(self.clients)].delete(photo["name"])
+                except ParseError:
+                    self.logger.error("Could not delete file: %s" % photo["name"])
+
 

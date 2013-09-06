@@ -1,10 +1,12 @@
 import requests
 import exceptions
 from lib.models import Base, LogMixin
+import pykka
 
-class ParseFileRestClient(Base, LogMixin):
+class ParseFileRestClient(pykka.ThreadingActor, LogMixin):
     
     def __init__(self, settings):
+        super(ParseFileRestClient, self).__init__()
         self.settings = settings
         if not self.settings.has_key("parse"):
             raise ParseError("Missing parse api information")
@@ -12,7 +14,9 @@ class ParseFileRestClient(Base, LogMixin):
     def post(self, filepath, filename):
         """Post a new file item to parse.com"""
         url = "%s/%s" % (self.settings["parse"]["rest_file_url"], filename)
+        
         data = open(filepath, 'rb')
+
         headers = {
             'X-Parse-Application-Id': self.settings["parse"]["application_id"],
             'X-Parse-REST-API-Key': self.settings["parse"]["rest_api_key"],

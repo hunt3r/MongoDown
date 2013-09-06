@@ -1,4 +1,4 @@
-import json, logging, traceback
+import json, logging, traceback, pykka
 from parse_rest.datatypes import Object
 import logging.config
 class ContentItem(Object):
@@ -8,6 +8,11 @@ class ContentItem(Object):
 class Base(object):
     def __init__(self):
         pass
+
+class ThreadedBase(object):
+    def __init__(self):
+        pass
+
 
 class LogMixin(object):
     @property
