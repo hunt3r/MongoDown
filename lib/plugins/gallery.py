@@ -118,11 +118,13 @@ class Gallery(Base, LogMixin):
         else:
             self.logger.error("You have no presets defined, please add gallery_presets array to settings file, with at least one preset defined, see docs.")
     
-    def cleanup(self,):
+    def cleanup(self):
         """Used to cleanup old content items when there are updates, old photos will
             be removed"""
         self.logger.info("Cleaning up old photos")
-        self.service.cleanupOldPhotos(self.contentItem.gallery["photos"])
+        if hasattr(self.contentItem, "gallery"):
+            self.service.cleanupOldPhotos(self.contentItem.gallery["photos"])
+            self.service.finalize()
 
     def get_files_from_data(self):
         from os import listdir
@@ -133,12 +135,11 @@ class GalleryService(Base, LogMixin):
     """Gallery plugin service functions"""
     def __init__(self, settings, contentItem=None):
         self.settings = settings
-        #self.client = ParseFileRestClient(settings)
-        # Start resolvers
         self.clients = [ParseFileRestClient.start(self.settings).proxy() for _ in range(self.settings["gallery"]["queue_size"])]
-                # Distribute work to contentItemActors (not blocking)
-        
 
+    def finalize(self):
+        self.logger.info("Killing client threads")
+        [client.stop() for client in self.clients]
 
     def uploadFiles(self, photos):
         """Upload all the photos from this gallery to server, and adapt each photo w/ response that includes URL"""

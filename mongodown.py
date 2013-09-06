@@ -9,7 +9,7 @@ argParser.add_argument('--contentfolder', help='Path to your content folder')
 args = argParser.parse_args()
 
 #Load environment
-settings = settings_local.development
+settings = settings_local.production
 
 def main():
     content_queue.ContentQueue(settings, getattr(args, "contentfolder", None))

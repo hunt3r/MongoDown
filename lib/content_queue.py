@@ -34,6 +34,7 @@ class ContentQueue(Base, LogMixin):
         # Distribute work to contentItemActors (not blocking)
         for i, filePath in enumerate(self.files):
             self.contentObjects.append(contentItemActors[i % len(contentItemActors)].parse(filePath))
+        
         results = pykka.get_all(self.contentObjects)
         
         pykka.ActorRegistry.stop_all()
