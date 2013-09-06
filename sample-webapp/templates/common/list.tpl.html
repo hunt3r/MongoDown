@@ -1,0 +1,7 @@
+<h1><%= pageTitle %></h1>
+<% _.each(items, function(item){ %>
+<article>
+    <h2><a href='item/<%= item.id %>'><%= item.get("meta").title %></a></h2>
+    <%= item.get("html") %>
+</article>
+<% }); %>

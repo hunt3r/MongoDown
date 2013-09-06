@@ -1,2 +1,7 @@
+.DS_Store
 *.pyc
 venv
+nginx
+nohup.out
+*.log
+test_data/output/
