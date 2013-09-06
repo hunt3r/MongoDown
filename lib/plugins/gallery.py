@@ -165,10 +165,12 @@ class GalleryService(Base, LogMixin):
         for i, photoSets in enumerate(photos):
             for key in photoSets.keys():
                 photo = photoSets[key]
-                self.logger.info("Deleting old file: %s" % photo["name"])
-                try:
-                    self.clients[i % len(self.clients)].delete(photo["name"])
-                except ParseError:
-                    self.logger.error("Could not delete file: %s" % photo["name"])
-
+                if photo.has_key("name"):
+                    self.logger.info("Deleting old file: %s" % photo["name"])
+                    try:
+                        self.clients[i % len(self.clients)].delete(photo["name"])
+                    except ParseError:
+                        self.logger.error("Could not delete file: %s" % photo["name"])
+                else:
+                    self.logger.error("missing photo info: " % photo)
 
